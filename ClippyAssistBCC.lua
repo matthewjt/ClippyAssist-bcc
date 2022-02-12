@@ -369,6 +369,36 @@ function ClippyAssist.SetText(msg, duration)
 	end)
 end
 
+-- Display a speech bubble for the specified duration with an animation.
+function ClippyAssist.SetTextAnimation(msg, animation, duration)
+	balloon.text:SetText(msg)
+
+	-- Resize balloon to fit text.
+	balloon:SetHeight(
+		balloon.text:GetHeight() +
+		balloon.text:GetLineHeight() +
+		2 * balloon_corner_size
+	)
+
+	-- Position balloon depending on Clippy's location.
+	ClippyAssist.PositionBalloon()
+
+	-- Display balloon.
+	balloon:Show()
+	if (animation) then
+		SingleAnimation(animation)
+	else
+		IdleAnimation("Explain")
+	end
+
+	-- Set up hiding for balloon.
+	time_hide_text = GetTime() + duration
+	C_Timer.After(duration, function()
+			balloon:Hide()
+			balloon.text:SetText("")
+	end)
+end
+
 ------------
 -- Events --
 ------------
@@ -565,7 +595,7 @@ function SlashCmdList.CLIPPY(msg, editBox)
 	end
 	if msg == "-help" or msg == "-h" or msg == "-?" then
 		print("You are currently using Clippy Assist v" ..
-			GetAddOnMetadata("ClippyAssist", "Version") .. ".")
+			GetAddOnMetadata("ClippyAssistBCC", "Version") .. ".")
 		print("It looks like you're trying to use Clippy Assist. " .. 
 			"Would you like some help with that?")
 		print("  -help: Shows this text.")
