@@ -1,5 +1,9 @@
 local data = ClippyAssist.data
 
+local CA_Realm = GetRealmName(); --Get Realm for Profile.
+local CA_Char = UnitName("player"); --Get char name for profile.
+local CAProfile = CA_Realm.." - "..CA_Char;
+
 local animation_queue = {}
 local animation_needs_init = true
 local is_frame_ready = false
@@ -143,6 +147,7 @@ end
 
 -- Create and position addon frame.
 local frame = CreateFrame("Frame", "ClippyFrame", UIParent)
+
 frame:SetSize(124, 93)
 frame:SetPoint("CENTER")
 frame:SetFrameStrata("HIGH")
@@ -498,6 +503,35 @@ function frame.events:DELETE_ITEM_CONFIRM(...)	SingleAnimation("EmptyTrash") end
 -- weakaura speech bubble (while idle)
 
 -- GetAttention
+frame:RegisterEvent("ADDON_LOADED")
+function frame.events:ADDON_LOADED(...)
+	
+	--Check for settings array.  Used for Profiles.
+	if( not ClippyAssistData ) then
+		ClippyAssistData = {};
+	end
+	--Check for Profile Settings
+	if( not ClippyAssistData[CAProfile]) then
+		ClippyAssistData[CAProfile] = {};
+	end
+	
+		--Check for Profile Settings
+	if( not ClippyAssistData[CAProfile].scale) then
+		ClippyAssistData[CAProfile].scale = 1;
+	end
+	
+	if ClippyAssistData[CAProfile].scale then
+		scale = tonumber(ClippyAssistData[CAProfile].scale)
+		if (scale == nil) then
+			scale = 1
+		end
+	end
+
+	frame:SetSize(124*scale, 93*scale)
+
+end
+
+-- GetAttention
 frame:RegisterEvent("PLAYER_FLAGS_CHANGED")
 function frame.events:PLAYER_FLAGS_CHANGED(unitTarget)
 	if unitTarget == "player" and UnitIsAFK("player") then SingleAnimation("GetAttention") end
@@ -593,12 +627,14 @@ function SlashCmdList.CLIPPY(msg, editBox)
 	if msg == "" then
 		msg = "-help"
 	end
+	msg, arg1 = strsplit(" ", msg)
 	if msg == "-help" or msg == "-h" or msg == "-?" then
 		print("You are currently using Clippy Assist v" ..
 			GetAddOnMetadata("ClippyAssistBCC", "Version") .. ".")
 		print("It looks like you're trying to use Clippy Assist. " .. 
 			"Would you like some help with that?")
 		print("  -help: Shows this text.")
+		print("  -scale <scale>: Scales Clippy with given percentage.")
 		print("  -hide: Temporarily hide Clippy. :c")
 		print("  -show: Show Clippy again. :D")
 		print("  -reset: Resets Clippy's position.")
@@ -606,11 +642,19 @@ function SlashCmdList.CLIPPY(msg, editBox)
 		print("  everything else: Attempts to play that animation.")
 	elseif msg == "-hide" then
 		frame:Hide()	-- Note: also prevents frame:OnUpdate() from firing!
+	elseif msg == "-scale" then
+		ClippyAssistData[CAProfile].scale = tonumber(arg1)
+		if (ClippyAssistData[CAProfile].scale == null) then
+			ClippyAssistData[CAProfile].scale = 1
+		end
+		frame:SetSize(124*ClippyAssistData[CAProfile].scale, 93*ClippyAssistData[CAProfile].scale)
 	elseif msg == "-show" then
 		frame:Show()
 	elseif msg == "-reset" or msg == "-r" then
 		frame:ClearAllPoints()
 		frame:SetPoint("CENTER")
+		ClippyAssistData[CAProfile].scale = 1
+		frame:SetSize(124*ClippyAssistData[CAProfile].scale, 93*ClippyAssistData[CAProfile].scale)
 	elseif msg == "-list" or msg == "-l" then
 		print("Clippy's available animations:")
 		local display = {}

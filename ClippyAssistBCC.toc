@@ -5,6 +5,7 @@
 ## Notes: Would you like some help with that?
 ## DefaultState: Enabled
 ## LoadOnDemand: 0
+## SavedVariables: ClippyAssistData
 
 # external libraries
 embeds.xml
